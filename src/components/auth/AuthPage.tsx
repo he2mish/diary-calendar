@@ -1,11 +1,24 @@
 import { useState } from 'react';
 import { useAuthStore } from '../../stores/authStore';
 
+const PROFILE_COLORS = [
+  { name: '회색', value: '#6b7280' },
+  { name: '빨강', value: '#ef4444' },
+  { name: '주황', value: '#f97316' },
+  { name: '노랑', value: '#eab308' },
+  { name: '초록', value: '#22c55e' },
+  { name: '파랑', value: '#3b82f6' },
+  { name: '보라', value: '#8b5cf6' },
+  { name: '분홍', value: '#ec4899' },
+];
+
 export default function AuthPage() {
   const { signIn, signUp } = useAuthStore();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [color, setColor] = useState(PROFILE_COLORS[0].value);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [signUpSuccess, setSignUpSuccess] = useState(false);
@@ -16,7 +29,12 @@ export default function AuthPage() {
     setLoading(true);
 
     if (isSignUp) {
-      const err = await signUp(email, password);
+      if (!displayName.trim()) {
+        setError('이름을 입력해 주세요');
+        setLoading(false);
+        return;
+      }
+      const err = await signUp(email, password, displayName.trim(), color);
       if (err) setError(err);
       else setSignUpSuccess(true);
     } else {
@@ -38,19 +56,56 @@ export default function AuthPage() {
 
         {signUpSuccess ? (
           <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <span className="w-8 h-8 rounded-full inline-block" style={{ backgroundColor: color }} />
+              <span className="text-lg font-semibold">{displayName}</span>
+            </div>
             <p className="text-sm text-gray-700 mb-4">
-              인증 메일을 발송했습니다.<br />
-              이메일을 확인해 주세요.
+              가입이 완료되었습니다!
             </p>
             <button
               onClick={() => { setIsSignUp(false); setSignUpSuccess(false); }}
               className="btn-primary"
             >
-              로그인으로 돌아가기
+              로그인하기
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {/* 회원가입 시 추가 필드 */}
+            {isSignUp && (
+              <>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">이름</label>
+                  <input
+                    type="text"
+                    placeholder="캘린더에 표시될 이름"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="input-field"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-2 block">프로필 색상</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {PROFILE_COLORS.map((c) => (
+                      <button
+                        key={c.value}
+                        type="button"
+                        onClick={() => setColor(c.value)}
+                        className={`w-9 h-9 rounded-full border-2 transition-transform ${
+                          color === c.value ? 'border-gray-900 scale-110' : 'border-transparent'
+                        }`}
+                        style={{ backgroundColor: c.value }}
+                        title={c.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
             <input
               type="email"
               placeholder="이메일"

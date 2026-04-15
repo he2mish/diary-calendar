@@ -10,7 +10,7 @@ interface Props {
 
 export default function Sidebar({ onClose }: Props) {
   const { currentDate, setCurrentDate, setView, openEventModal } = useCalendarStore();
-  const { user, signOut } = useAuthStore();
+  const { user, profile, signOut } = useAuthStore();
   const today = new Date();
 
   const monthStart = startOfMonth(currentDate);
@@ -107,7 +107,16 @@ export default function Sidebar({ onClose }: Props) {
 
       {/* 사용자 정보 & 로그아웃 */}
       <div className="mt-auto pt-4 border-t border-gray-200">
-        <p className="text-xs text-gray-400 truncate px-2 mb-2">{user?.email}</p>
+        <div className="flex items-center gap-2 px-2 mb-2">
+          <span
+            className="w-6 h-6 rounded-full shrink-0"
+            style={{ backgroundColor: profile?.color || '#6b7280' }}
+          />
+          <div className="min-w-0">
+            <p className="text-sm font-medium truncate">{profile?.displayName || user?.email}</p>
+            <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+          </div>
+        </div>
         <button
           onClick={signOut}
           className="w-full text-left text-sm text-gray-500 hover:text-gray-900 px-2 py-1 rounded hover:bg-gray-100"
