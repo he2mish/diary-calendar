@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../stores/authStore';
-import type { Profile } from '../../stores/authStore';
 
 const PROFILE_COLORS = [
   { name: '회색', value: '#6b7280' },
@@ -18,7 +17,7 @@ interface Props {
 }
 
 export default function AccountPage({ onClose }: Props) {
-  const { user, profile, updateProfile, changePassword } = useAuthStore();
+  const { profile, updateProfile, changePassword } = useAuthStore();
 
   const [displayName, setDisplayName] = useState('');
   const [color, setColor] = useState('#6b7280');

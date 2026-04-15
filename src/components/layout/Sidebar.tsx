@@ -13,7 +13,7 @@ interface Props {
 
 export default function Sidebar({ onClose }: Props) {
   const { currentDate, setCurrentDate, setView, openEventModal } = useCalendarStore();
-  const { user, profile, signOut } = useAuthStore();
+  const { profile, signOut } = useAuthStore();
   const [showAccount, setShowAccount] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const today = new Date();

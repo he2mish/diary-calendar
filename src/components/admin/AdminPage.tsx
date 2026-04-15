@@ -30,7 +30,7 @@ export default function AdminPage({ onClose }: { onClose: () => void }) {
 
   useEffect(() => { loadUsers(); }, []);
 
-  const handleResetPassword = async (userId: string) => {
+  const handleResetPassword = async (_userId: string) => {
     if (newPassword.length < 6) {
       setMsg('비밀번호는 6자 이상이어야 합니다');
       return;
