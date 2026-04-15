@@ -501,11 +501,14 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
     );
     if (existing) return '이미 공유된 사용자입니다';
 
-    // 해당 아이디의 사용자 찾기
+    // 해당 아이디의 사용자 찾기 (username 또는 email로 검색)
+    const email = `${username}@nyodiary.app`;
     const { data: targetProfile } = await supabase
       .from('profiles')
-      .select('id')
-      .eq('username', username)
+      .select('id, username')
+      .or(`username.eq.${username},email.eq.${email}`)
+      .not('deleted', 'eq', true)
+      .limit(1)
       .single();
     if (!targetProfile) return '존재하지 않는 아이디입니다';
 
