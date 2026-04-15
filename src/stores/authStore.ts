@@ -19,6 +19,8 @@ interface AuthStore {
   signIn: (email: string, password: string) => Promise<string | null>;
   signOut: () => Promise<void>;
   loadProfile: () => Promise<void>;
+  updateProfile: (displayName: string, color: string) => Promise<string | null>;
+  changePassword: (newPassword: string) => Promise<string | null>;
 }
 
 export const useAuthStore = create<AuthStore>((set, get) => ({
@@ -79,6 +81,24 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   signIn: async (email, password) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return error.message;
+    return null;
+  },
+
+  updateProfile: async (displayName, color) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return '로그인이 필요합니다';
+    const { error } = await supabase.from('profiles').update({
+      display_name: displayName,
+      color,
+    }).eq('id', user.id);
+    if (error) return error.message;
+    await get().loadProfile();
+    return null;
+  },
+
+  changePassword: async (newPassword) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) return error.message;
     return null;
   },
