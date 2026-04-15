@@ -22,7 +22,7 @@
   body {
     @apply bg-white text-gray-900 m-0;
     font-family: 'NanumJungHagSaeng', cursive;
-    font-size: 18px;
+    font-size: 14px;
   }
 
   @media (min-width: 640px) {

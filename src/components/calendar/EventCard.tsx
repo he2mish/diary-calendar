@@ -7,19 +7,27 @@ interface Props {
   compact?: boolean;
 }
 
+function isMobile() {
+  return window.innerWidth < 640;
+}
+
 export default function EventCard({ event, compact = false }: Props) {
-  const { openEventModal } = useCalendarStore();
+  const { openEventModal, openEventSummary } = useCalendarStore();
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    openEventModal(undefined, event);
+    if (isMobile()) {
+      openEventSummary(event);
+    } else {
+      openEventModal(undefined, event);
+    }
   };
 
   if (compact) {
     return (
       <button
         onClick={handleClick}
-        className={`w-full text-left text-xs px-1.5 py-0.5 rounded truncate font-medium ${
+        className={`w-full text-left text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded truncate font-medium ${
           event.isShared ? 'border border-white/40' : ''
         }`}
         style={{
@@ -29,12 +37,14 @@ export default function EventCard({ event, compact = false }: Props) {
         }}
         title={`${event.title}${event.isShared ? ` (${event.ownerName})` : ''}`}
       >
-        {!event.allDay && (
-          <span className="opacity-80 mr-1">
-            {format(parseISO(event.startAt), 'HH:mm')}
-          </span>
-        )}
         {event.isShared && <span className="opacity-70 mr-0.5">👤</span>}
+        <span className="hidden sm:inline">
+          {!event.allDay && (
+            <span className="opacity-80 mr-1">
+              {format(parseISO(event.startAt), 'HH:mm')}
+            </span>
+          )}
+        </span>
         {event.title}
         {event.recurrenceRule && ' ↻'}
       </button>
@@ -44,22 +54,22 @@ export default function EventCard({ event, compact = false }: Props) {
   return (
     <button
       onClick={handleClick}
-      className="w-full text-left px-3 py-2 rounded-lg text-white text-sm hover:opacity-90 transition-opacity"
+      className="w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-white text-xs sm:text-sm hover:opacity-90 transition-opacity"
       style={{ backgroundColor: event.color }}
     >
       <div className="flex items-center gap-1">
         <span className="font-medium">{event.title}{event.recurrenceRule && ' ↻'}</span>
       </div>
       {!event.allDay && (
-        <div className="text-xs opacity-80 mt-0.5">
+        <div className="text-[10px] sm:text-xs opacity-80 mt-0.5">
           {format(parseISO(event.startAt), 'HH:mm')} - {format(parseISO(event.endAt), 'HH:mm')}
         </div>
       )}
       {event.isShared && event.ownerName && (
-        <div className="text-xs opacity-70 mt-0.5">👤 {event.ownerName}</div>
+        <div className="text-[10px] sm:text-xs opacity-70 mt-0.5">👤 {event.ownerName}</div>
       )}
       {event.description && (
-        <div className="text-xs opacity-70 mt-1 line-clamp-2">{event.description}</div>
+        <div className="text-[10px] sm:text-xs opacity-70 mt-1 line-clamp-2">{event.description}</div>
       )}
     </button>
   );

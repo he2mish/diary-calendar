@@ -5,6 +5,7 @@ import MonthView from './components/calendar/MonthView';
 import WeekView from './components/calendar/WeekView';
 import DayView from './components/calendar/DayView';
 import EventModal from './components/calendar/EventModal';
+import EventSummary from './components/calendar/EventSummary';
 import AuthPage from './components/auth/AuthPage';
 import { useCalendarStore, startNotificationScheduler } from './stores/calendarStore';
 import { useAuthStore } from './stores/authStore';
@@ -44,6 +45,7 @@ export default function App() {
       {view === 'week' && <WeekView />}
       {view === 'day' && <DayView />}
       <EventModal />
+      <EventSummary />
     </Layout>
   );
 }

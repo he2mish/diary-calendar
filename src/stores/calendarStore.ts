@@ -141,7 +141,10 @@ interface CalendarStore {
   modalTime: string | null;
   openEventModal: (date?: string, event?: CalendarEvent, time?: string) => void;
   openEventModalReadonly: (event: CalendarEvent) => void;
+  openEventSummary: (event: CalendarEvent) => void;
   closeEventModal: () => void;
+  isEventSummaryOpen: boolean;
+  summaryEvent: CalendarEvent | null;
 
   scrollToEventId: string | null;
   setScrollToEventId: (id: string | null) => void;
@@ -411,8 +414,16 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
     modalDate: null, modalTime: null, selectedEvent: event,
   }),
 
+  isEventSummaryOpen: false,
+  summaryEvent: null,
+
+  openEventSummary: (event) => set({
+    isEventSummaryOpen: true, summaryEvent: event,
+  }),
+
   closeEventModal: () => set({
     isEventModalOpen: false, isEventModalReadonly: false,
+    isEventSummaryOpen: false, summaryEvent: null,
     modalDate: null, modalTime: null, selectedEvent: null,
   }),
 
