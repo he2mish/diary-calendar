@@ -30,6 +30,7 @@ export default function EventModal() {
   const [recurrenceInterval, setRecurrenceInterval] = useState(1);
   const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]);
   const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
 
   const isEditing = !!selectedEvent;
 
@@ -45,6 +46,7 @@ export default function EventModal() {
       setEndTime(format(end, 'HH:mm'));
       setAllDay(selectedEvent.allDay);
       setColor(selectedEvent.color);
+      setIsPrivate(selectedEvent.isPrivate || false);
       if (selectedEvent.recurrenceRule) {
         setUseRecurrence(true);
         setRecurrenceType(selectedEvent.recurrenceRule.type);
@@ -68,6 +70,7 @@ export default function EventModal() {
       setEndTime(eTime);
       setAllDay(false);
       setColor(EVENT_COLORS[0].value);
+      setIsPrivate(false);
       setUseRecurrence(false);
       setRecurrenceType('weekly');
       setRecurrenceInterval(1);
@@ -175,6 +178,7 @@ export default function EventModal() {
         allDay,
         color,
         recurrenceRule,
+        isPrivate,
       });
     } else {
       addEvent({
@@ -186,6 +190,7 @@ export default function EventModal() {
         color,
         recurrenceRule,
         parentEventId: null,
+        isPrivate,
       });
     }
     closeEventModal();
@@ -358,6 +363,19 @@ export default function EventModal() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* 공개/비공개 */}
+          <div className="border-t border-gray-100 pt-3">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={isPrivate}
+                onChange={(e) => setIsPrivate(e.target.checked)}
+                className="rounded"
+              />
+              비공개 (공유 사용자에게 숨김)
+            </label>
           </div>
         </div>
 

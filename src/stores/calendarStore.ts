@@ -79,20 +79,22 @@ function getNextOccurrence(date: Date, rule: RecurrenceRule): Date {
 // --- DB row <-> App type mappers ---
 
 function dbEventToApp(row: Record<string, unknown>, currentUserId?: string): CalendarEvent {
+  const isOther = currentUserId ? (row.user_id as string) !== currentUserId : false;
   return {
     id: row.id as string,
-    title: row.title as string,
-    description: (row.description as string) || '',
+    title: isOther && row.is_private ? '(비공개)' : row.title as string,
+    description: isOther && row.is_private ? '' : (row.description as string) || '',
     startAt: row.start_at as string,
     endAt: row.end_at as string,
     allDay: row.all_day as boolean,
-    color: row.color as string,
+    color: isOther && row.is_private ? '#d1d5db' : row.color as string,
     recurrenceRule: row.recurrence_rule as RecurrenceRule | null,
     parentEventId: row.parent_event_id as string | null,
+    isPrivate: (row.is_private as boolean) || false,
     userId: row.user_id as string,
     ownerName: (row.owner_name as string) || undefined,
     ownerEmail: (row.owner_email as string) || undefined,
-    isShared: currentUserId ? (row.user_id as string) !== currentUserId : false,
+    isShared: isOther,
   };
 }
 
@@ -190,6 +192,7 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
       color: eventData.color,
       recurrence_rule: eventData.recurrenceRule,
       parent_event_id: eventData.parentEventId,
+      is_private: eventData.isPrivate,
     }).select().single();
     if (!error && data) {
       set({ events: [...get().events, dbEventToApp(data)] });
@@ -205,6 +208,7 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
     if (updates.allDay !== undefined) dbUpdates.all_day = updates.allDay;
     if (updates.color !== undefined) dbUpdates.color = updates.color;
     if (updates.recurrenceRule !== undefined) dbUpdates.recurrence_rule = updates.recurrenceRule;
+    if (updates.isPrivate !== undefined) dbUpdates.is_private = updates.isPrivate;
 
     await supabase.from('events').update(dbUpdates).eq('id', id);
     set({ events: get().events.map((e) => e.id === id ? { ...e, ...updates } : e) });

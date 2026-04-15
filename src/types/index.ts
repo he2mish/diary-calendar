@@ -8,6 +8,7 @@ export interface CalendarEvent {
   color: string;
   recurrenceRule: RecurrenceRule | null;
   parentEventId: string | null;
+  isPrivate: boolean; // 비공개 일정 (공유 안 함)
   // 공유 관련
   userId?: string;
   ownerName?: string;
