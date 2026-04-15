@@ -23,6 +23,8 @@
     @apply bg-white text-gray-900 m-0;
     font-family: 'NanumJungHagSaeng', cursive;
     font-size: 14px;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   @media (min-width: 640px) {
