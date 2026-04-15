@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'NanumJungHagSaeng';
+  src: url('/NanumJungHagSaeng.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-hand: 'NanumJungHagSaeng', cursive;
+  --text-xs: 0.875rem;    /* 14px (was 12px) */
+  --text-sm: 1rem;         /* 16px (was 14px) */
+  --text-base: 1.125rem;   /* 18px (was 16px) */
+  --text-lg: 1.375rem;     /* 22px (was 18px) */
+  --text-xl: 1.625rem;     /* 26px (was 20px) */
+  --text-2xl: 1.875rem;    /* 30px (was 24px) */
+}
+
+@layer base {
+  body {
+    @apply bg-white text-gray-900 m-0;
+    font-family: 'NanumJungHagSaeng', cursive;
+    font-size: 18px;
+  }
+
+  @media (min-width: 640px) {
+    body {
+      font-size: 22px;
+    }
+  }
+
+  button, input, select, textarea {
+    font-family: inherit;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors text-base font-medium cursor-pointer;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-gray-800 px-4 py-2 rounded-lg border border-gray-400 hover:bg-gray-100 transition-colors text-base font-medium cursor-pointer;
+  }
+
+  .btn-danger {
+    @apply bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors text-base font-medium cursor-pointer;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-base;
+  }
+
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50;
+  }
+
+  .modal-content {
+    @apply bg-white shadow-xl p-4 sm:p-6 w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto border border-gray-300
+           rounded-t-xl sm:rounded-xl sm:max-w-lg sm:mx-4;
+  }
+}
