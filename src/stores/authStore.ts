@@ -90,14 +90,15 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     if (error) return error.message;
 
     if (data.user) {
-      await supabase.from('profiles').upsert({
-        id: data.user.id,
+      // 트리거가 먼저 생성할 수 있으므로 잠시 대기 후 update
+      await new Promise((r) => setTimeout(r, 500));
+      await supabase.from('profiles').update({
         email,
         username: trimmed,
         display_name: displayName,
         color,
         is_admin: false,
-      });
+      }).eq('id', data.user.id);
     }
     return null;
   },
