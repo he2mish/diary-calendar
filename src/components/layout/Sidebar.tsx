@@ -1,6 +1,7 @@
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { useCalendarStore } from '../../stores/calendarStore';
+import { useAuthStore } from '../../stores/authStore';
 
 interface Props {
   onClose: () => void;
@@ -8,6 +9,7 @@ interface Props {
 
 export default function Sidebar({ onClose }: Props) {
   const { currentDate, setCurrentDate, setView, openEventModal } = useCalendarStore();
+  const { user, signOut } = useAuthStore();
   const today = new Date();
 
   const monthStart = startOfMonth(currentDate);
@@ -96,6 +98,17 @@ export default function Sidebar({ onClose }: Props) {
           className="text-left text-sm text-gray-600 hover:text-gray-900 px-2 py-1 rounded hover:bg-gray-100"
         >
           일간 뷰 & 체크리스트
+        </button>
+      </div>
+
+      {/* 사용자 정보 & 로그아웃 */}
+      <div className="mt-auto pt-4 border-t border-gray-200">
+        <p className="text-xs text-gray-400 truncate px-2 mb-2">{user?.email}</p>
+        <button
+          onClick={signOut}
+          className="w-full text-left text-sm text-gray-500 hover:text-gray-900 px-2 py-1 rounded hover:bg-gray-100"
+        >
+          로그아웃
         </button>
       </div>
     </aside>

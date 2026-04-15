@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.103.0",
     "date-fns": "^4.1.0",
     "korean-lunar-calendar": "^0.3.6",
     "react": "^19.2.4",
