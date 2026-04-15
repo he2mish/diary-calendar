@@ -209,7 +209,7 @@ export default function EventModal() {
 
   return (
     <div className="modal-overlay" onClick={closeEventModal}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content overflow-x-hidden" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-lg font-bold mb-4">
           {isEditing ? '일정 수정' : '새 일정'}
         </h2>
@@ -237,7 +237,7 @@ export default function EventModal() {
           </label>
 
           {/* Date/Time */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-gray-500 mb-1 block">시작일</label>
               <input type="date" value={startDate} onChange={(e) => { setStartDate(e.target.value); if (endDate < e.target.value) setEndDate(e.target.value); }} className="input-field" />
