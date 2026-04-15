@@ -36,6 +36,8 @@ export default function AdminPage({ onClose }: { onClose: () => void }) {
   const [addPassword, setAddPassword] = useState('');
   const [addColor, setAddColor] = useState(PROFILE_COLORS[0].value);
   const [addLoading, setAddLoading] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [showAdminPw, setShowAdminPw] = useState(false);
 
   if (!profile?.isAdmin) return null;
 
@@ -104,7 +106,17 @@ export default function AdminPage({ onClose }: { onClose: () => void }) {
       return;
     }
 
+    if (!adminPassword) {
+      setShowAdminPw(true);
+      setMsg({ type: 'err', text: '관리자 비밀번호를 입력해 주세요' });
+      setAddLoading(false);
+      return;
+    }
+
     setAddLoading(true);
+    const adminEmail = `${profile?.username}@nyodiary.app`;
+
+    // 1. 새 사용자 가입
     const email = `${trimmed}@nyodiary.app`;
     const { data, error } = await supabase.auth.signUp({ email, password: addPassword });
 
@@ -126,6 +138,9 @@ export default function AdminPage({ onClose }: { onClose: () => void }) {
       });
     }
 
+    // 2. 관리자로 다시 로그인
+    await supabase.auth.signInWithPassword({ email: adminEmail, password: adminPassword });
+
     setMsg({ type: 'ok', text: `"${trimmed}" 사용자가 추가되었습니다` });
     setAddUsername('');
     setAddDisplayName('');
@@ -133,11 +148,6 @@ export default function AdminPage({ onClose }: { onClose: () => void }) {
     setAddColor(PROFILE_COLORS[0].value);
     setShowAddUser(false);
     setAddLoading(false);
-
-    // 관리자 세션 유지를 위해 다시 로그인
-    const adminEmail = `${profile?.username}@nyodiary.app`;
-    // signUp이 자동 로그인되므로 관리자로 다시 로그인
-    await supabase.auth.signInWithPassword({ email: adminEmail, password: '' }).catch(() => {});
 
     await loadUsers();
   };
@@ -214,6 +224,16 @@ export default function AdminPage({ onClose }: { onClose: () => void }) {
                     />
                   ))}
                 </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">관리자 비밀번호 확인</label>
+                <input
+                  type="password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  placeholder="관리자 본인 비밀번호"
+                  className="input-field text-sm"
+                />
               </div>
               <button
                 onClick={handleAddUser}
