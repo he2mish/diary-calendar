@@ -150,8 +150,6 @@ export default function WeekView() {
             </div>
           );
         })()}
-          ))}
-        </div>
       </div>
     </div>
   );
