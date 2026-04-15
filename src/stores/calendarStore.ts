@@ -445,7 +445,7 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
     const { data, error } = await supabase
       .from('calendar_shares')
       .select('*')
-      .or(`owner_id.eq.${user.id},shared_with_id.eq.${user.id},shared_with_email.ilike.${myUsername}@diary.local`);
+      .or(`owner_id.eq.${user.id},shared_with_id.eq.${user.id},shared_with_email.ilike.${myUsername}@nyodiary.app`);
 
     if (error || !data) return;
 
@@ -463,7 +463,7 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
     for (const row of data) {
       const ownerProfile = profileMap.get(row.owner_id);
       // shared_with_email에서 username 추출
-      const sharedWithUsername = row.shared_with_email?.replace('@diary.local', '') || '';
+      const sharedWithUsername = row.shared_with_email?.replace('@nyodiary.app', '') || '';
       const share: CalendarShare = {
         id: row.id,
         ownerId: row.owner_id,
@@ -511,7 +511,7 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
 
     const { error } = await supabase.from('calendar_shares').insert({
       owner_id: user.id,
-      shared_with_email: `${username}@diary.local`,
+      shared_with_email: `${username}@nyodiary.app`,
       shared_with_id: targetProfile.id,
       permission,
       accepted: false,
