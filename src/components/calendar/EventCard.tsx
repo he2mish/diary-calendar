@@ -46,22 +46,22 @@ export default function EventCard({ event, compact = false }: Props) {
   return (
     <button
       onClick={handleClick}
-      className="w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-white text-xs sm:text-sm hover:opacity-90 transition-opacity"
+      className="w-full h-full text-left px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-white text-[10px] sm:text-sm hover:opacity-90 transition-opacity overflow-hidden"
       style={{ backgroundColor: event.color }}
     >
       <div className="flex items-center gap-1">
-        <span className="font-medium">{event.title}{event.recurrenceRule && ' ↻'}</span>
+        <span className="font-medium truncate">{event.title}{event.recurrenceRule && ' ↻'}</span>
+        {!event.allDay && (
+          <span className="opacity-80 shrink-0 text-[9px] sm:text-xs">
+            {format(parseISO(event.startAt), 'HH:mm')}-{format(parseISO(event.endAt), 'HH:mm')}
+          </span>
+        )}
       </div>
-      {!event.allDay && (
-        <div className="text-[10px] sm:text-xs opacity-80 mt-0.5">
-          {format(parseISO(event.startAt), 'HH:mm')} - {format(parseISO(event.endAt), 'HH:mm')}
-        </div>
-      )}
       {event.isShared && event.ownerName && (
-        <div className="text-[10px] sm:text-xs opacity-70 mt-0.5">👤 {event.ownerName}</div>
+        <div className="text-[9px] sm:text-xs opacity-70">👤 {event.ownerName}</div>
       )}
       {event.description && (
-        <div className="text-[10px] sm:text-xs opacity-70 mt-1 line-clamp-2">{event.description}</div>
+        <div className="text-[9px] sm:text-xs opacity-70 line-clamp-2">{event.description}</div>
       )}
     </button>
   );

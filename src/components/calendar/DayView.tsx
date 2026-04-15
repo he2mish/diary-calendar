@@ -50,6 +50,28 @@ export default function DayView() {
     }, 100);
   }, [scrollToEventId]);
 
+  // 10분 = 1단위, 1시간 = 6단위, 슬롯 높이
+  const SLOT_HEIGHT = 10; // px per 10min
+  const HOUR_HEIGHT = SLOT_HEIGHT * 6; // 60px per hour
+  const TOTAL_HEIGHT = HOUR_HEIGHT * 24;
+
+  const getEventPosition = (event: typeof timedEvents[0]) => {
+    const start = parseISO(event.startAt);
+    const end = parseISO(event.endAt);
+    const startMin = getHours(start) * 60 + getMinutes(start);
+    const endMin = Math.min(getHours(end) * 60 + getMinutes(end), 24 * 60);
+    const duration = Math.max(endMin - startMin, 10); // 최소 10분
+    const top = (startMin / (24 * 60)) * TOTAL_HEIGHT;
+    const height = (duration / (24 * 60)) * TOTAL_HEIGHT;
+    return { top, height };
+  };
+
+  const handleHourClick = (hour: number, e: React.MouseEvent) => {
+    // 이벤트 카드 클릭이 아닌 빈 영역 클릭만 처리
+    if ((e.target as HTMLElement).closest('[data-event]')) return;
+    openEventModal(dateStr, undefined, `${String(hour).padStart(2, '0')}:00`);
+  };
+
   const timeline = (
     <div ref={timelineRef} className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 overflow-auto">
       {allDayEvents.length > 0 && (
@@ -62,35 +84,50 @@ export default function DayView() {
           </div>
         </div>
       )}
-      <div>
-        {HOURS.map((hour) => {
-          const hourEvents = timedEvents.filter(
-            (e) => getHours(parseISO(e.startAt)) === hour
-          );
-          return (
+      <div className="flex" style={{ height: TOTAL_HEIGHT }}>
+        {/* 시간 라벨 */}
+        <div className="shrink-0 w-12 sm:w-16 relative">
+          {HOURS.map((hour) => (
+            <div
+              key={hour}
+              className="absolute w-full text-[10px] sm:text-xs text-gray-400 text-right pr-2 sm:pr-3 border-b border-gray-50"
+              style={{ top: hour * HOUR_HEIGHT, height: HOUR_HEIGHT }}
+            >
+              {String(hour).padStart(2, '0')}:00
+            </div>
+          ))}
+        </div>
+
+        {/* 이벤트 영역 */}
+        <div className="flex-1 relative">
+          {/* 시간 그리드 라인 + 클릭 영역 */}
+          {HOURS.map((hour) => (
             <div
               key={hour}
               data-hour={hour}
-              onClick={() => openEventModal(dateStr, undefined, `${String(hour).padStart(2, '0')}:00`)}
-              className="flex border-b border-gray-50 h-16 cursor-pointer hover:bg-gray-100/30 transition-colors"
-            >
-              <div className="w-12 sm:w-16 text-xs text-gray-400 text-right pr-2 sm:pr-3 py-2 shrink-0">
-                {String(hour).padStart(2, '0')}:00
+              onClick={(e) => handleHourClick(hour, e)}
+              className="absolute w-full border-b border-gray-50 cursor-pointer hover:bg-gray-100/30 transition-colors"
+              style={{ top: hour * HOUR_HEIGHT, height: HOUR_HEIGHT }}
+            />
+          ))}
+
+          {/* 이벤트 블록 */}
+          {timedEvents.map((e) => {
+            const { top, height } = getEventPosition(e);
+            return (
+              <div
+                key={e.id}
+                data-event
+                className="absolute left-1 right-1 z-10"
+                style={{ top, height, minHeight: 20 }}
+              >
+                <div className="h-full">
+                  <EventCard event={e} />
+                </div>
               </div>
-              <div className="flex-1 relative px-1">
-                {hourEvents.map((e) => {
-                  const start = parseISO(e.startAt);
-                  const topOffset = (getMinutes(start) / 60) * 100;
-                  return (
-                    <div key={e.id} style={{ top: `${topOffset}%` }} className="absolute left-1 right-1">
-                      <EventCard event={e} />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
