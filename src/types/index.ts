@@ -8,6 +8,22 @@ export interface CalendarEvent {
   color: string;
   recurrenceRule: RecurrenceRule | null;
   parentEventId: string | null;
+  // 공유 관련
+  userId?: string;
+  ownerName?: string;
+  ownerEmail?: string;
+  isShared?: boolean; // 다른 사용자의 공유 일정인지
+}
+
+export interface CalendarShare {
+  id: string;
+  ownerId: string;
+  ownerEmail: string;
+  ownerName: string;
+  sharedWithEmail: string;
+  sharedWithId: string | null;
+  permission: 'view' | 'edit';
+  accepted: boolean;
 }
 
 export interface RecurrenceRule {

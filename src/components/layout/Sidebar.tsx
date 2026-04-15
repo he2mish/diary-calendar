@@ -2,6 +2,7 @@ import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSa
 import { ko } from 'date-fns/locale';
 import { useCalendarStore } from '../../stores/calendarStore';
 import { useAuthStore } from '../../stores/authStore';
+import SharePanel from '../share/SharePanel';
 
 interface Props {
   onClose: () => void;
@@ -100,6 +101,9 @@ export default function Sidebar({ onClose }: Props) {
           일간 뷰 & 체크리스트
         </button>
       </div>
+
+      {/* 캘린더 공유 */}
+      <SharePanel />
 
       {/* 사용자 정보 & 로그아웃 */}
       <div className="mt-auto pt-4 border-t border-gray-200">

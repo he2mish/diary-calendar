@@ -122,6 +122,18 @@ export default function EventModal() {
                 </span>
               </div>
             )}
+
+            {selectedEvent.ownerName && (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 w-16 shrink-0">작성자</span>
+                <span>
+                  {selectedEvent.ownerName}
+                  {selectedEvent.isShared && (
+                    <span className="text-xs text-gray-400 ml-1">(공유)</span>
+                  )}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end mt-6">

@@ -19,15 +19,22 @@ export default function EventCard({ event, compact = false }: Props) {
     return (
       <button
         onClick={handleClick}
-        className="w-full text-left text-xs px-1.5 py-0.5 rounded truncate text-white font-medium"
-        style={{ backgroundColor: event.color }}
-        title={event.title}
+        className={`w-full text-left text-xs px-1.5 py-0.5 rounded truncate font-medium ${
+          event.isShared ? 'border border-white/40' : ''
+        }`}
+        style={{
+          backgroundColor: event.color,
+          color: 'white',
+          opacity: event.isShared ? 0.85 : 1,
+        }}
+        title={`${event.title}${event.isShared ? ` (${event.ownerName})` : ''}`}
       >
         {!event.allDay && (
           <span className="opacity-80 mr-1">
             {format(parseISO(event.startAt), 'HH:mm')}
           </span>
         )}
+        {event.isShared && <span className="opacity-70 mr-0.5">👤</span>}
         {event.title}
         {event.recurrenceRule && ' ↻'}
       </button>
@@ -40,11 +47,16 @@ export default function EventCard({ event, compact = false }: Props) {
       className="w-full text-left px-3 py-2 rounded-lg text-white text-sm hover:opacity-90 transition-opacity"
       style={{ backgroundColor: event.color }}
     >
-      <div className="font-medium">{event.title}{event.recurrenceRule && ' ↻'}</div>
+      <div className="flex items-center gap-1">
+        <span className="font-medium">{event.title}{event.recurrenceRule && ' ↻'}</span>
+      </div>
       {!event.allDay && (
         <div className="text-xs opacity-80 mt-0.5">
           {format(parseISO(event.startAt), 'HH:mm')} - {format(parseISO(event.endAt), 'HH:mm')}
         </div>
+      )}
+      {event.isShared && event.ownerName && (
+        <div className="text-xs opacity-70 mt-0.5">👤 {event.ownerName}</div>
       )}
       {event.description && (
         <div className="text-xs opacity-70 mt-1 line-clamp-2">{event.description}</div>

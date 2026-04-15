@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type {
   CalendarEvent,
   CalendarView,
+  CalendarShare,
   DailyChecklist,
   ChecklistItem,
   WeeklyDiary,
@@ -77,7 +78,7 @@ function getNextOccurrence(date: Date, rule: RecurrenceRule): Date {
 
 // --- DB row <-> App type mappers ---
 
-function dbEventToApp(row: Record<string, unknown>): CalendarEvent {
+function dbEventToApp(row: Record<string, unknown>, currentUserId?: string): CalendarEvent {
   return {
     id: row.id as string,
     title: row.title as string,
@@ -88,6 +89,10 @@ function dbEventToApp(row: Record<string, unknown>): CalendarEvent {
     color: row.color as string,
     recurrenceRule: row.recurrence_rule as RecurrenceRule | null,
     parentEventId: row.parent_event_id as string | null,
+    userId: row.user_id as string,
+    ownerName: (row.owner_name as string) || undefined,
+    ownerEmail: (row.owner_email as string) || undefined,
+    isShared: currentUserId ? (row.user_id as string) !== currentUserId : false,
   };
 }
 
@@ -141,6 +146,14 @@ interface CalendarStore {
   scrollToEventId: string | null;
   setScrollToEventId: (id: string | null) => void;
 
+  // Sharing
+  shares: CalendarShare[];
+  pendingInvites: CalendarShare[];
+  loadShares: () => Promise<void>;
+  inviteUser: (email: string, permission: 'view' | 'edit') => Promise<string | null>;
+  acceptInvite: (shareId: string) => Promise<void>;
+  removeShare: (shareId: string) => Promise<void>;
+
   loadAll: () => Promise<void>;
 }
 
@@ -154,8 +167,11 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
   events: [],
 
   loadEvents: async () => {
-    const { data } = await supabase.from('events').select('*').order('start_at');
-    if (data) set({ events: data.map(dbEventToApp) });
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    // 내 일정 + 공유받은 일정 (뷰 사용)
+    const { data } = await supabase.from('events_with_owner').select('*').order('start_at');
+    if (data) set({ events: data.map((row) => dbEventToApp(row as Record<string, unknown>, user.id)) });
   },
 
   addEvent: async (eventData) => {
@@ -403,12 +419,102 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
   scrollToEventId: null,
   setScrollToEventId: (id) => set({ scrollToEventId: id }),
 
+  // === Sharing ===
+  shares: [],
+  pendingInvites: [],
+
+  loadShares: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // 내가 공유한 것 + 나에게 공유된 것
+    const { data } = await supabase
+      .from('calendar_shares')
+      .select('*, owner:profiles!calendar_shares_owner_id_fkey(email, display_name)')
+      .or(`owner_id.eq.${user.id},shared_with_id.eq.${user.id},shared_with_email.eq.${user.email}`);
+
+    if (!data) return;
+
+    const shares: CalendarShare[] = [];
+    const pendingInvites: CalendarShare[] = [];
+
+    for (const row of data) {
+      const ownerProfile = row.owner as Record<string, string> | null;
+      const share: CalendarShare = {
+        id: row.id,
+        ownerId: row.owner_id,
+        ownerEmail: ownerProfile?.email || '',
+        ownerName: ownerProfile?.display_name || '',
+        sharedWithEmail: row.shared_with_email,
+        sharedWithId: row.shared_with_id,
+        permission: row.permission,
+        accepted: row.accepted,
+      };
+
+      if (row.owner_id === user.id) {
+        shares.push(share);
+      } else if (!row.accepted) {
+        pendingInvites.push(share);
+      } else {
+        shares.push(share);
+      }
+    }
+
+    set({ shares, pendingInvites });
+  },
+
+  inviteUser: async (email, permission) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return '로그인이 필요합니다';
+    if (email === user.email) return '자신에게는 공유할 수 없습니다';
+
+    // 이미 공유된 사용자인지 확인
+    const existing = get().shares.find(
+      (s) => s.sharedWithEmail === email && s.ownerId === user.id
+    );
+    if (existing) return '이미 공유된 사용자입니다';
+
+    // 해당 이메일의 사용자 ID 찾기
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    const { error } = await supabase.from('calendar_shares').insert({
+      owner_id: user.id,
+      shared_with_email: email,
+      shared_with_id: profiles?.id || null,
+      permission,
+      accepted: false,
+    });
+
+    if (error) return error.message;
+    await get().loadShares();
+    return null;
+  },
+
+  acceptInvite: async (shareId) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from('calendar_shares')
+      .update({ accepted: true, shared_with_id: user.id })
+      .eq('id', shareId);
+    await Promise.all([get().loadShares(), get().loadEvents()]);
+  },
+
+  removeShare: async (shareId) => {
+    await supabase.from('calendar_shares').delete().eq('id', shareId);
+    await Promise.all([get().loadShares(), get().loadEvents()]);
+  },
+
   loadAll: async () => {
     await Promise.all([
       get().loadEvents(),
       get().loadChecklists(),
       get().loadDiaries(),
       get().loadNotifications(),
+      get().loadShares(),
     ]);
   },
 }));
