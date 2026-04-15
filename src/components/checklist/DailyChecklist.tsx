@@ -76,7 +76,7 @@ export default function DailyChecklist({ date }: Props) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleAdd();
+    if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleAdd();
   };
 
   // Drag handlers
