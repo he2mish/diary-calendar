@@ -103,7 +103,17 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   signIn: async (username, password) => {
-    const email = usernameToEmail(username.trim().toLowerCase());
+    const trimmed = username.trim().toLowerCase();
+    const email = usernameToEmail(trimmed);
+
+    // 삭제된 사용자 체크
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('deleted')
+      .eq('username', trimmed)
+      .single();
+    if (prof?.deleted) return '비활성화된 계정입니다. 관리자에게 문의하세요';
+
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return '아이디 또는 비밀번호가 올바르지 않습니다';
     return null;
