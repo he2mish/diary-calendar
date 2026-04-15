@@ -15,12 +15,6 @@ export default function WeekView() {
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const events = getExpandedEvents(weekStart, weekEnd);
 
-  const getEventsForDayHour = (day: Date, hour: number) =>
-    events.filter((e) => {
-      const start = parseISO(e.startAt);
-      return isSameDay(start, day) && getHours(start) === hour && !e.allDay;
-    });
-
   const getAllDayEvents = (day: Date) =>
     events.filter((e) => {
       if (!e.allDay) return false;
