@@ -19,7 +19,7 @@ export default function EventCard({ event, compact = false }: Props) {
     return (
       <button
         onClick={handleClick}
-        className={`w-full text-left text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded truncate font-medium ${
+        className={`w-full h-full text-left text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded font-medium overflow-hidden ${
           event.isShared ? 'border border-white/40' : ''
         }`}
         style={{
@@ -29,16 +29,16 @@ export default function EventCard({ event, compact = false }: Props) {
         }}
         title={`${event.title}${event.isShared ? ` (${event.ownerName})` : ''}`}
       >
-        {event.isShared && <span className="opacity-70 mr-0.5">👤</span>}
-        <span className="hidden sm:inline">
+        <div className="truncate">
+          {event.isShared && <span className="opacity-70 mr-0.5">👤</span>}
           {!event.allDay && (
-            <span className="opacity-80 mr-1">
+            <span className="opacity-80 mr-1 hidden sm:inline">
               {format(parseISO(event.startAt), 'HH:mm')}
             </span>
           )}
-        </span>
-        {event.title}
-        {event.recurrenceRule && ' ↻'}
+          {event.title}
+          {event.recurrenceRule && ' ↻'}
+        </div>
       </button>
     );
   }

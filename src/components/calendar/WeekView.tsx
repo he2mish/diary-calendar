@@ -75,29 +75,72 @@ export default function WeekView() {
         </div>
 
         {/* Time grid */}
-        <div className="grid grid-cols-[40px_repeat(7,1fr)] sm:grid-cols-[60px_repeat(7,1fr)]">
-          {HOURS.map((hour) => (
-            <div key={hour} className="contents">
-              <div className="border-r border-b border-gray-100 text-[10px] sm:text-xs text-gray-400 text-right pr-1 sm:pr-2 py-1 h-12 sm:h-14">
-                {String(hour).padStart(2, '0')}:00
-              </div>
-              {days.map((day, di) => {
-                const hourEvents = getEventsForDayHour(day, hour);
-                return (
+        {(() => {
+          const HOUR_HEIGHT = 48; // px per hour (sm: handled via scale isn't needed, 48px works for both)
+          const TOTAL_HEIGHT = HOUR_HEIGHT * 24;
+
+          const getEventPos = (event: typeof events[0]) => {
+            const start = parseISO(event.startAt);
+            const end = parseISO(event.endAt);
+            const startMin = getHours(start) * 60 + getMinutes(start);
+            const endMin = Math.min(getHours(end) * 60 + getMinutes(end), 24 * 60);
+            const duration = Math.max(endMin - startMin, 10);
+            const top = (startMin / (24 * 60)) * TOTAL_HEIGHT;
+            const height = (duration / (24 * 60)) * TOTAL_HEIGHT;
+            return { top, height };
+          };
+
+          const getTimedEventsForDay = (day: Date) =>
+            events.filter((e) => {
+              if (e.allDay) return false;
+              const start = parseISO(e.startAt);
+              return isSameDay(start, day);
+            });
+
+          return (
+            <div className="flex" style={{ height: TOTAL_HEIGHT }}>
+              {/* 시간 라벨 */}
+              <div className="shrink-0 w-[40px] sm:w-[60px] relative border-r border-gray-100">
+                {HOURS.map((hour) => (
                   <div
-                    key={di}
-                    onClick={() => {
-                      const dateStr = format(day, 'yyyy-MM-dd');
-                      openEventModal(dateStr, undefined, `${String(hour).padStart(2, '0')}:00`);
-                    }}
-                    className="border-r border-b border-gray-50 h-12 sm:h-14 px-0.5 cursor-pointer hover:bg-gray-100/30 relative"
+                    key={hour}
+                    className="absolute w-full text-[10px] sm:text-xs text-gray-400 text-right pr-1 sm:pr-2 border-b border-gray-50"
+                    style={{ top: hour * HOUR_HEIGHT, height: HOUR_HEIGHT }}
                   >
-                    {hourEvents.map((e) => {
-                      const start = parseISO(e.startAt);
-                      const topOffset = (getMinutes(start) / 60) * 100;
+                    {String(hour).padStart(2, '0')}:00
+                  </div>
+                ))}
+              </div>
+
+              {/* 요일별 컬럼 */}
+              {days.map((day, di) => {
+                const dayTimedEvents = getTimedEventsForDay(day);
+                return (
+                  <div key={di} className="flex-1 relative border-r border-gray-50">
+                    {/* 시간 그리드 라인 + 클릭 */}
+                    {HOURS.map((hour) => (
+                      <div
+                        key={hour}
+                        onClick={() => {
+                          const dateStr = format(day, 'yyyy-MM-dd');
+                          openEventModal(dateStr, undefined, `${String(hour).padStart(2, '0')}:00`);
+                        }}
+                        className="absolute w-full border-b border-gray-50 cursor-pointer hover:bg-gray-100/30 transition-colors"
+                        style={{ top: hour * HOUR_HEIGHT, height: HOUR_HEIGHT }}
+                      />
+                    ))}
+                    {/* 이벤트 블록 */}
+                    {dayTimedEvents.map((e) => {
+                      const { top, height } = getEventPos(e);
                       return (
-                        <div key={e.id} style={{ top: `${topOffset}%` }} className="absolute left-0.5 right-0.5">
-                          <EventCard event={e} compact />
+                        <div
+                          key={e.id}
+                          className="absolute left-0.5 right-0.5 z-10"
+                          style={{ top, height, minHeight: 16 }}
+                        >
+                          <div className="h-full">
+                            <EventCard event={e} compact />
+                          </div>
                         </div>
                       );
                     })}
@@ -105,6 +148,8 @@ export default function WeekView() {
                 );
               })}
             </div>
+          );
+        })()}
           ))}
         </div>
       </div>
