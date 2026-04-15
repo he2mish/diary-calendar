@@ -37,7 +37,6 @@ export default function AdminPage({ onClose }: { onClose: () => void }) {
   const [addColor, setAddColor] = useState(PROFILE_COLORS[0].value);
   const [addLoading, setAddLoading] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
-  const [showAdminPw, setShowAdminPw] = useState(false);
 
   if (!profile?.isAdmin) return null;
 
