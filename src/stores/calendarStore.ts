@@ -438,20 +438,23 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // 내가 공유한 것 + 나에게 공유된 것
+    // 내 username 가져오기
+    const { data: myProfile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
+    const myUsername = myProfile?.username || '';
+
     const { data, error } = await supabase
       .from('calendar_shares')
       .select('*')
-      .or(`owner_id.eq.${user.id},shared_with_id.eq.${user.id},shared_with_email.eq.${user.email}`);
+      .or(`owner_id.eq.${user.id},shared_with_id.eq.${user.id},shared_with_email.ilike.${myUsername}@diary.local`);
 
     if (error || !data) return;
 
-    // 소유자 프로필 조회
-    const ownerIds = [...new Set(data.map((r) => r.owner_id))];
+    // 관련 사용자 프로필 조회
+    const allIds = [...new Set([...data.map((r) => r.owner_id), ...data.map((r) => r.shared_with_id).filter(Boolean)])];
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, email, display_name')
-      .in('id', ownerIds);
+      .select('id, username, display_name')
+      .in('id', allIds);
     const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
 
     const shares: CalendarShare[] = [];
@@ -459,12 +462,14 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
 
     for (const row of data) {
       const ownerProfile = profileMap.get(row.owner_id);
+      // shared_with_email에서 username 추출
+      const sharedWithUsername = row.shared_with_email?.replace('@diary.local', '') || '';
       const share: CalendarShare = {
         id: row.id,
         ownerId: row.owner_id,
-        ownerEmail: ownerProfile?.email || '',
+        ownerUsername: ownerProfile?.username || '',
         ownerName: ownerProfile?.display_name || '',
-        sharedWithEmail: row.shared_with_email,
+        sharedWithUsername,
         sharedWithId: row.shared_with_id,
         permission: row.permission,
         accepted: row.accepted,
@@ -482,28 +487,32 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
     set({ shares, pendingInvites });
   },
 
-  inviteUser: async (email, permission) => {
+  inviteUser: async (username, permission) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return '로그인이 필요합니다';
-    if (email === user.email) return '자신에게는 공유할 수 없습니다';
+
+    // 자기 자신 체크
+    const { data: myProfile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
+    if (myProfile?.username === username) return '자신에게는 공유할 수 없습니다';
 
     // 이미 공유된 사용자인지 확인
     const existing = get().shares.find(
-      (s) => s.sharedWithEmail === email && s.ownerId === user.id
+      (s) => s.sharedWithUsername === username && s.ownerId === user.id
     );
     if (existing) return '이미 공유된 사용자입니다';
 
-    // 해당 이메일의 사용자 ID 찾기
-    const { data: profiles } = await supabase
+    // 해당 아이디의 사용자 찾기
+    const { data: targetProfile } = await supabase
       .from('profiles')
       .select('id')
-      .eq('email', email)
+      .eq('username', username)
       .single();
+    if (!targetProfile) return '존재하지 않는 아이디입니다';
 
     const { error } = await supabase.from('calendar_shares').insert({
       owner_id: user.id,
-      shared_with_email: email,
-      shared_with_id: profiles?.id || null,
+      shared_with_email: `${username}@diary.local`,
+      shared_with_id: targetProfile.id,
       permission,
       accepted: false,
     });

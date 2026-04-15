@@ -4,9 +4,15 @@ import type { User, Session } from '@supabase/supabase-js';
 
 export interface Profile {
   id: string;
-  email: string;
+  username: string;
   displayName: string;
   color: string;
+  isAdmin: boolean;
+}
+
+// 아이디 → 내부 이메일 변환
+function usernameToEmail(username: string): string {
+  return `${username.toLowerCase()}@diary.local`;
 }
 
 interface AuthStore {
@@ -15,8 +21,8 @@ interface AuthStore {
   profile: Profile | null;
   loading: boolean;
   initialize: () => Promise<void>;
-  signUp: (email: string, password: string, displayName: string, color: string) => Promise<string | null>;
-  signIn: (email: string, password: string) => Promise<string | null>;
+  signUp: (username: string, password: string, displayName: string, color: string) => Promise<string | null>;
+  signIn: (username: string, password: string) => Promise<string | null>;
   signOut: () => Promise<void>;
   loadProfile: () => Promise<void>;
   updateProfile: (displayName: string, color: string) => Promise<string | null>;
@@ -55,33 +61,51 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       set({
         profile: {
           id: data.id,
-          email: data.email,
-          displayName: data.display_name,
+          username: data.username || '',
+          displayName: data.display_name || '',
           color: data.color || '#6b7280',
+          isAdmin: data.is_admin || false,
         },
       });
     }
   },
 
-  signUp: async (email, password, displayName, color) => {
+  signUp: async (username, password, displayName, color) => {
+    // 아이디 유효성 검사
+    const trimmed = username.trim().toLowerCase();
+    if (!/^[a-z0-9_]{3,20}$/.test(trimmed)) {
+      return '아이디는 3~20자 영문 소문자, 숫자, _만 사용 가능합니다';
+    }
+
+    // 아이디 중복 체크
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', trimmed)
+      .single();
+    if (existing) return '이미 사용 중인 아이디입니다';
+
+    const email = usernameToEmail(trimmed);
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) return error.message;
 
-    // 프로필 업데이트 (트리거가 기본값으로 생성 후, 이름/색상 업데이트)
     if (data.user) {
       await supabase.from('profiles').upsert({
         id: data.user.id,
         email,
+        username: trimmed,
         display_name: displayName,
         color,
+        is_admin: false,
       });
     }
     return null;
   },
 
-  signIn: async (email, password) => {
+  signIn: async (username, password) => {
+    const email = usernameToEmail(username.trim().toLowerCase());
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return error.message;
+    if (error) return '아이디 또는 비밀번호가 올바르지 않습니다';
     return null;
   },
 

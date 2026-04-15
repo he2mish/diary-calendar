@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../stores/authStore';
+import type { Profile } from '../../stores/authStore';
 
 const PROFILE_COLORS = [
   { name: '회색', value: '#6b7280' },
@@ -89,7 +90,7 @@ export default function AccountPage({ onClose }: Props) {
             />
             <div className="min-w-0">
               <p className="font-medium">{displayName || '이름 없음'}</p>
-              <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+              <p className="text-xs text-gray-400 truncate">@{profile?.username}</p>
             </div>
           </div>
 
@@ -141,12 +142,12 @@ export default function AccountPage({ onClose }: Props) {
 
         <hr className="border-gray-200 mb-6" />
 
-        {/* 가입 이메일 */}
+        {/* 아이디 */}
         <section className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">가입 이메일</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">아이디</h3>
           <div className="bg-gray-50 rounded-lg px-4 py-3 border border-gray-200">
-            <p className="text-sm">{user?.email}</p>
-            <p className="text-xs text-gray-400 mt-1">이메일은 변경할 수 없습니다</p>
+            <p className="text-sm">@{profile?.username}</p>
+            <p className="text-xs text-gray-400 mt-1">아이디는 변경할 수 없습니다</p>
           </div>
         </section>
 

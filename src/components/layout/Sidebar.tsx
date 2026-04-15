@@ -5,6 +5,7 @@ import { useCalendarStore } from '../../stores/calendarStore';
 import { useAuthStore } from '../../stores/authStore';
 import SharePanel from '../share/SharePanel';
 import AccountPage from '../auth/AccountPage';
+import AdminPage from '../admin/AdminPage';
 
 interface Props {
   onClose: () => void;
@@ -14,6 +15,7 @@ export default function Sidebar({ onClose }: Props) {
   const { currentDate, setCurrentDate, setView, openEventModal } = useCalendarStore();
   const { user, profile, signOut } = useAuthStore();
   const [showAccount, setShowAccount] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
   const today = new Date();
 
   const monthStart = startOfMonth(currentDate);
@@ -119,10 +121,18 @@ export default function Sidebar({ onClose }: Props) {
             style={{ backgroundColor: profile?.color || '#6b7280' }}
           />
           <div className="min-w-0 text-left">
-            <p className="text-sm font-medium truncate">{profile?.displayName || user?.email}</p>
-            <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+            <p className="text-sm font-medium truncate">{profile?.displayName || profile?.username}</p>
+            <p className="text-xs text-gray-400 truncate">@{profile?.username}</p>
           </div>
         </button>
+        {profile?.isAdmin && (
+          <button
+            onClick={() => setShowAdmin(true)}
+            className="w-full text-left text-sm text-gray-500 hover:text-gray-900 px-2 py-1 rounded hover:bg-gray-100"
+          >
+            관리자 페이지
+          </button>
+        )}
         <button
           onClick={signOut}
           className="w-full text-left text-sm text-gray-500 hover:text-gray-900 px-2 py-1 rounded hover:bg-gray-100"
@@ -132,6 +142,7 @@ export default function Sidebar({ onClose }: Props) {
       </div>
 
       {showAccount && <AccountPage onClose={() => setShowAccount(false)} />}
+      {showAdmin && <AdminPage onClose={() => setShowAdmin(false)} />}
     </aside>
   );
 }

@@ -15,7 +15,7 @@ const PROFILE_COLORS = [
 export default function AuthPage() {
   const { signIn, signUp } = useAuthStore();
   const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [color, setColor] = useState(PROFILE_COLORS[0].value);
@@ -34,11 +34,11 @@ export default function AuthPage() {
         setLoading(false);
         return;
       }
-      const err = await signUp(email, password, displayName.trim(), color);
+      const err = await signUp(username, password, displayName.trim(), color);
       if (err) setError(err);
       else setSignUpSuccess(true);
     } else {
-      const err = await signIn(email, password);
+      const err = await signIn(username, password);
       if (err) setError(err);
     }
     setLoading(false);
@@ -60,8 +60,11 @@ export default function AuthPage() {
               <span className="w-8 h-8 rounded-full inline-block" style={{ backgroundColor: color }} />
               <span className="text-lg font-semibold">{displayName}</span>
             </div>
-            <p className="text-sm text-gray-700 mb-4">
+            <p className="text-sm text-gray-700 mb-1">
               가입이 완료되었습니다!
+            </p>
+            <p className="text-xs text-gray-400 mb-4">
+              아이디: {username.toLowerCase()}
             </p>
             <button
               onClick={() => { setIsSignUp(false); setSignUpSuccess(false); }}
@@ -72,7 +75,6 @@ export default function AuthPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* 회원가입 시 추가 필드 */}
             {isSignUp && (
               <>
                 <div>
@@ -106,23 +108,30 @@ export default function AuthPage() {
               </>
             )}
 
-            <input
-              type="email"
-              placeholder="이메일"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input-field"
-              required
-            />
-            <input
-              type="password"
-              placeholder="비밀번호 (6자 이상)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-field"
-              minLength={6}
-              required
-            />
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">아이디</label>
+              <input
+                type="text"
+                placeholder="영문 소문자, 숫자, _ (3~20자)"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
+                className="input-field"
+                maxLength={20}
+                required
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">비밀번호</label>
+              <input
+                type="password"
+                placeholder="6자 이상"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input-field"
+                minLength={6}
+                required
+              />
+            </div>
 
             {error && (
               <p className="text-sm text-red-500">{error}</p>

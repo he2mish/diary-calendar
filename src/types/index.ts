@@ -18,9 +18,9 @@ export interface CalendarEvent {
 export interface CalendarShare {
   id: string;
   ownerId: string;
-  ownerEmail: string;
+  ownerUsername: string;
   ownerName: string;
-  sharedWithEmail: string;
+  sharedWithUsername: string;
   sharedWithId: string | null;
   permission: 'view' | 'edit';
   accepted: boolean;
