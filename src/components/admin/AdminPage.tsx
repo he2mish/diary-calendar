@@ -106,9 +106,7 @@ export default function AdminPage({ onClose }: { onClose: () => void }) {
     }
 
     if (!adminPassword) {
-      setShowAdminPw(true);
       setMsg({ type: 'err', text: '관리자 비밀번호를 입력해 주세요' });
-      setAddLoading(false);
       return;
     }
 
