@@ -428,18 +428,26 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
     if (!user) return;
 
     // 내가 공유한 것 + 나에게 공유된 것
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('calendar_shares')
-      .select('*, owner:profiles!calendar_shares_owner_id_fkey(email, display_name)')
+      .select('*')
       .or(`owner_id.eq.${user.id},shared_with_id.eq.${user.id},shared_with_email.eq.${user.email}`);
 
-    if (!data) return;
+    if (error || !data) return;
+
+    // 소유자 프로필 조회
+    const ownerIds = [...new Set(data.map((r) => r.owner_id))];
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, email, display_name')
+      .in('id', ownerIds);
+    const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
 
     const shares: CalendarShare[] = [];
     const pendingInvites: CalendarShare[] = [];
 
     for (const row of data) {
-      const ownerProfile = row.owner as Record<string, string> | null;
+      const ownerProfile = profileMap.get(row.owner_id);
       const share: CalendarShare = {
         id: row.id,
         ownerId: row.owner_id,
