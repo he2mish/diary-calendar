@@ -12,7 +12,7 @@ export interface Profile {
 
 // 아이디 → 내부 이메일 변환
 function usernameToEmail(username: string): string {
-  return `${username.toLowerCase()}@nyodiary.app`;
+  return `nyodiary.${username.toLowerCase()}@gmail.com`;
 }
 
 interface AuthStore {
