@@ -7,20 +7,12 @@ interface Props {
   compact?: boolean;
 }
 
-function isMobile() {
-  return window.innerWidth < 640;
-}
-
 export default function EventCard({ event, compact = false }: Props) {
-  const { openEventModal, openEventSummary } = useCalendarStore();
+  const { openEventSummary } = useCalendarStore();
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isMobile()) {
-      openEventSummary(event);
-    } else {
-      openEventModal(undefined, event);
-    }
+    openEventSummary(event);
   };
 
   if (compact) {
