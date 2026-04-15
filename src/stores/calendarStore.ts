@@ -421,7 +421,7 @@ export function startNotificationScheduler() {
       });
 
       if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('Diary Calendar', {
+        new Notification('nyo DIARY', {
           body: `"${event.title}" 일정이 ${minutesUntil}분 후 시작됩니다`,
         });
       }

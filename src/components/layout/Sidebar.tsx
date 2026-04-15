@@ -34,7 +34,7 @@ export default function Sidebar({ onClose }: Props) {
     <aside className="w-64 h-full bg-white border-r border-gray-200 p-4 flex flex-col gap-6 overflow-y-auto">
       {/* 모바일 닫기 버튼 */}
       <div className="flex items-center justify-between lg:hidden">
-        <span className="font-bold text-lg">Diary Calendar</span>
+        <span className="font-bold text-lg">nyo DIARY</span>
         <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">✕</button>
       </div>
 

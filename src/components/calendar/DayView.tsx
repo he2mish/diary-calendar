@@ -126,8 +126,12 @@ export default function DayView() {
       </div>
 
       {/* 모바일: 탭 전환 */}
-      <div className="flex sm:hidden flex-1 min-h-0">
-        {mobileTab === 'timeline' ? timeline : <DailyChecklist date={dateStr} />}
+      <div className="flex sm:hidden flex-1 min-h-0 w-full">
+        {mobileTab === 'timeline' ? timeline : (
+          <div className="w-full">
+            <DailyChecklist date={dateStr} />
+          </div>
+        )}
       </div>
     </div>
   );

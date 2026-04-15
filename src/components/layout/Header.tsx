@@ -50,7 +50,7 @@ export default function Header({ onMenuToggle }: Props) {
           </button>
           {/* 앱 이름 (데스크톱만) */}
           <h1 className="text-2xl font-bold text-gray-900 mr-2 hidden lg:block shrink-0">
-            Diary Calendar
+            nyo DIARY
           </h1>
           {/* 네비게이션 */}
           <button onClick={() => navigate('prev')} className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg shrink-0">
